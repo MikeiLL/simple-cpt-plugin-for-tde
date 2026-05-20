@@ -61,21 +61,15 @@ function cptui_register_my_cpts_board_member() {
 add_action( 'init', 'cptui_register_my_cpts_board_member' );
 
 add_shortcode('board', function($atts) {
-  $query = new WP_Query( array(
-      'post_type' => 'board-member',
-  ) );
-
-  while ( $query->have_posts() ) :
-      $query->the_post();
-      the_title();
-        the_content();
-  endwhile;
-
-  /* Restore original Post Data
-  * NB: Because we are using new WP_Query we aren't stomping on the
-  * original $wp_query and it does not need to be reset.
-  */
-  wp_reset_postdata();
-  return "hello, world.";
+  $posts = get_posts([
+        'post_type' => 'board-member',
+        'numberposts' => 20,
+        'post_status' => 'publish',
+    ]);
+    $result = "";
+    echo "<pre>";
+    print_r($posts);
+    print_r(get_the_post_thumbnail_url($posts[0]->ID));
+    echo "</pre>";
+    return "hi, world";
 });
-?>
