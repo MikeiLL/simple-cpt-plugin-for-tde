@@ -42,7 +42,7 @@ function tde_compile_post_type_labels($singular = 'Post', $plural = 'Posts') {
   ];
 }
 
-function cptui_register_my_cpts_board_member() {
+function cptui_register_tde_cpts() {
 
 	/**
 	 * Post Type: Board Members.
@@ -73,69 +73,89 @@ function cptui_register_my_cpts_board_member() {
 		"rewrite" => [ "slug" => "board-member", "with_front" => true ],
 		"query_var" => true,
 		"menu_icon" => "dashicons-lightbulb",
-		"supports" => [ "title", "editor", "thumbnail", ],
+		"supports" => [ "title", "editor", "thumbnail", "custom-fields", ],
 		"show_in_graphql" => false,
 	];
 
 	register_post_type( "board-member", $args );
+
+
+	/**
+	 * Post Type: Artists.
+	 */
+
+   $labels = tde_compile_post_type_labels('Artist', 'Artists');
+
+   $args = [
+     "label" => esc_html__( "Artists", "tdeplugin" ),
+     "labels" => $labels,
+     "description" => "",
+     "public" => true,
+     "publicly_queryable" => true,
+     "show_ui" => true,
+     "show_in_rest" => true,
+     "rest_base" => "",
+     "rest_controller_class" => "WP_REST_Posts_Controller",
+     "rest_namespace" => "wp/v2",
+     "has_archive" => false,
+     "show_in_menu" => true,
+     "show_in_nav_menus" => true,
+     "delete_with_user" => false,
+     "exclude_from_search" => false,
+     "capability_type" => "post",
+     "map_meta_cap" => true,
+     "hierarchical" => false,
+     "can_export" => false,
+     "rewrite" => [ "slug" => "artist", "with_front" => true ],
+     "query_var" => true,
+     "menu_icon" => "dashicons-megaphone",
+     "supports" => [ "title", "editor", "thumbnail", "custom-fields"],
+     "show_in_graphql" => false,
+   ];
+
+   register_post_type( "artist", $args );
 }
 
-add_action( 'init', 'cptui_register_my_cpts_board_member' );
+add_action( 'init', 'cptui_register_tde_cpts' );
 
 add_shortcode('board', function($atts) {
   $posts = get_posts([
         'post_type' => 'board-member',
-        'numberposts' => 20,
+        'numberposts' => 50,
         'post_status' => 'publish',
     ]);
-/*
-(
-    [0] => WP_Post Object
-        (
-            [ID] => 473
-            [post_author] => 1
-            [post_date] => 2026-05-19 22:32:51
-            [post_date_gmt] => 2026-05-19 22:32:51
-            [post_content] =>
-Mike iLL Kilmer the bugout bla bla  Lorem ipsum dolor sit amet, consectetur adipiscing elit. Vivamus non fringilla nisl. Curabitur ex turpis, pellentesque at viverra non, tempor ut turpis. Etiam id vehicula metus, eu porttitor magna. Vivamus non malesuada felis. Quisque sodales ligula neque, nec aliquet tortor malesuada venenatis. Suspendisse potenti. Nunc sit amet sodales ex. Aenean ut ultrices purus. Suspendisse sit amet nibh ex. Curabitur nibh nisl, suscipit condimentum dolor a, accumsan luctus enim.
-
-
-
-
-
-Also bla  Lorem ipsum dolor sit amet, consectetur adipiscing elit. Vivamus non fringilla nisl. Curabitur ex turpis, pellentesque at viverra non, tempor ut turpis. Etiam id vehicula metus, eu porttitor magna. Vivamus non malesuada felis. Quisque sodales ligula neque, nec aliquet tortor malesuada venenatis. Suspendisse potenti. Nunc sit amet sodales ex. Aenean ut ultrices purus. Suspendisse sit amet nibh ex. Curabitur nibh nisl, suscipit condimentum dolor a, accumsan luctus enim.
-
-
-
-            [post_title] => Mike iLL Kilmer
-            [post_excerpt] =>
-            [post_status] => publish
-            [comment_status] => closed
-            [ping_status] => closed
-            [post_password] =>
-            [post_name] => mike-ill-kilmer
-            [to_ping] =>
-            [pinged] =>
-            [post_modified] => 2026-05-19 22:32:51
-            [post_modified_gmt] => 2026-05-19 22:32:51
-            [post_content_filtered] =>
-            [post_parent] => 0
-            [guid] => http://the-dickinson-ensemble.local/?post_type=board-member&p=473
-            [menu_order] => 0
-            [post_type] => board-member
-            [post_mime_type] =>
-            [comment_count] => 0
-            [filter] => raw
-        )
-
-)
-*/
-    $result = "<style>img.biopic {max-width: 200px; height: auto; float: left;}</style>";
+    $result = "<style>img.biopic {max-width: 200px; height: auto; margin: 1em;} img.biopic-left {float: left;} img.biopic-right {float:right}</style>";
     $result .= "<div>";
     foreach ($posts as $i => $p) {
       $result .= '<h2>'.$p->post_title.'</h2>';
       //$result .= '<img src='.get_the_post_thumbnail_url($posts[0]->ID).' title="board member photo" alt="board member photo">';
-      $result .= get_the_post_thumbnail($posts[$i]->ID, ' ', ['class' => 'biopic']);
+      $styles = $i % 2 == 0 ? 'biopic biopic-left' : 'biopic biopic-right';
+      $result .= get_the_post_thumbnail($posts[$i]->ID, ' ', ['class' => $styles]);
+      $result .= $p->post_content;// post_content
+      //get_the_post_thumbnail_url($posts[0]->ID);
+    }
+    $result .= '</div>';
+    return $result;
+});
+
+
+add_shortcode('artists', function($atts) {
+  $posts = get_posts([
+        'post_type' => 'artist',
+        'numberposts' => 50,
+        'post_status' => 'publish',
+    ]);
+    $customField = get_post_meta($posts[0]->ID, "roles");
+    echo "<pre>";
+    print_r($customField);
+    echo "</pre>";
+    $result = "<style>img.biopic {max-width: 200px; height: auto; margin: 1em;} img.biopic-left {float: left;} img.biopic-right {float:right}</style>";
+    $result .= "<div>";
+    foreach ($posts as $i => $p) {
+      $result .= '<h2>'.$p->post_title.'</h2>';
+      //$result .= '<img src='.get_the_post_thumbnail_url($posts[0]->ID).' title="board member photo" alt="board member photo">';
+      $styles = $i % 2 == 0 ? 'biopic biopic-left' : 'biopic biopic-right';
+      $result .= get_the_post_thumbnail($posts[$i]->ID, ' ', ['class' => $styles]);
       $result .= $p->post_content;// post_content
       //get_the_post_thumbnail_url($posts[0]->ID);
     }
