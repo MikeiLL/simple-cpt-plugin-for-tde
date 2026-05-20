@@ -16,7 +16,7 @@
 if ( ! defined( 'ABSPATH' ) ) {
 	exit;
 }
-
+add_theme_support( 'post-thumbnails' );
 function cptui_register_my_cpts_board_member() {
 
 	/**
@@ -51,7 +51,7 @@ function cptui_register_my_cpts_board_member() {
 		"rewrite" => [ "slug" => "board-member", "with_front" => true ],
 		"query_var" => true,
 		"menu_icon" => "dashicons-lightbulb",
-		"supports" => [ "title", "editor", "thumbnail" ],
+		"supports" => [ "title", "editor", "thumbnail", ],
 		"show_in_graphql" => false,
 	];
 
@@ -66,10 +66,57 @@ add_shortcode('board', function($atts) {
         'numberposts' => 20,
         'post_status' => 'publish',
     ]);
-    $result = "";
-    echo "<pre>";
-    print_r($posts);
-    print_r(get_the_post_thumbnail_url($posts[0]->ID));
-    echo "</pre>";
-    return "hi, world";
+/*
+(
+    [0] => WP_Post Object
+        (
+            [ID] => 473
+            [post_author] => 1
+            [post_date] => 2026-05-19 22:32:51
+            [post_date_gmt] => 2026-05-19 22:32:51
+            [post_content] =>
+Mike iLL Kilmer the bugout bla bla  Lorem ipsum dolor sit amet, consectetur adipiscing elit. Vivamus non fringilla nisl. Curabitur ex turpis, pellentesque at viverra non, tempor ut turpis. Etiam id vehicula metus, eu porttitor magna. Vivamus non malesuada felis. Quisque sodales ligula neque, nec aliquet tortor malesuada venenatis. Suspendisse potenti. Nunc sit amet sodales ex. Aenean ut ultrices purus. Suspendisse sit amet nibh ex. Curabitur nibh nisl, suscipit condimentum dolor a, accumsan luctus enim.
+
+
+
+
+
+Also bla  Lorem ipsum dolor sit amet, consectetur adipiscing elit. Vivamus non fringilla nisl. Curabitur ex turpis, pellentesque at viverra non, tempor ut turpis. Etiam id vehicula metus, eu porttitor magna. Vivamus non malesuada felis. Quisque sodales ligula neque, nec aliquet tortor malesuada venenatis. Suspendisse potenti. Nunc sit amet sodales ex. Aenean ut ultrices purus. Suspendisse sit amet nibh ex. Curabitur nibh nisl, suscipit condimentum dolor a, accumsan luctus enim.
+
+
+
+            [post_title] => Mike iLL Kilmer
+            [post_excerpt] =>
+            [post_status] => publish
+            [comment_status] => closed
+            [ping_status] => closed
+            [post_password] =>
+            [post_name] => mike-ill-kilmer
+            [to_ping] =>
+            [pinged] =>
+            [post_modified] => 2026-05-19 22:32:51
+            [post_modified_gmt] => 2026-05-19 22:32:51
+            [post_content_filtered] =>
+            [post_parent] => 0
+            [guid] => http://the-dickinson-ensemble.local/?post_type=board-member&p=473
+            [menu_order] => 0
+            [post_type] => board-member
+            [post_mime_type] =>
+            [comment_count] => 0
+            [filter] => raw
+        )
+
+)
+*/
+    $result = "<style>img.biopic {max-width: 200px; height: auto; float: left;}</style>";
+    $result .= "<div>";
+    foreach ($posts as $p) {
+      $result .= '<h2>'.$p->post_title.'</h2>';
+      //$result .= '<img src='.get_the_post_thumbnail_url($posts[0]->ID).' title="board member photo" alt="board member photo">';
+      $result .= get_the_post_thumbnail($posts[0]->ID, ' ', ['class' => 'biopic']);
+      $result .= $p->post_content;// post_content
+      //get_the_post_thumbnail_url($posts[0]->ID);
+    }
+    $result .= '</div>';
+    return $result;
 });
