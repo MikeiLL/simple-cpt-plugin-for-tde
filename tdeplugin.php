@@ -16,20 +16,42 @@
 if ( ! defined( 'ABSPATH' ) ) {
 	exit;
 }
+
 add_theme_support( 'post-thumbnails' );
+
+function tde_compile_post_type_labels($singular = 'Post', $plural = 'Posts') {
+  $p_lower = strtolower($plural);
+  $s_lower = strtolower($singular);
+
+  return [
+      'name' => $plural,
+      'singular_name' => $singular,
+      'add_new_item' => "New $singular",
+      'edit_item' => "Edit $singular",
+      'view_item' => "View $singular",
+      'view_items' => "View $plural",
+      'search_items' => "Search $plural",
+      'not_found' => "No $p_lower found",
+      'not_found_in_trash' => "No $p_lower found in trash",
+      'parent_item_colon' => "Parent $singular",
+      'all_items' => "All $plural",
+      'archives' => "$singular Archives",
+      'attributes' => "$singular Attributes",
+      'insert_into_item' => "Insert into $s_lower",
+      'uploaded_to_this_item' => "Uploaded to this $s_lower",
+  ];
+}
+
 function cptui_register_my_cpts_board_member() {
 
 	/**
 	 * Post Type: Board Members.
 	 */
 
-	$labels = [
-		"name" => esc_html__( "Board Members", "custom-post-type-ui" ),
-		"singular_name" => esc_html__( "Board Member", "custom-post-type-ui" ),
-	];
+  $labels = tde_compile_post_type_labels('Board Member', 'Board Members');
 
 	$args = [
-		"label" => esc_html__( "Board Members", "custom-post-type-ui" ),
+		"label" => esc_html__( "Board Members", "tdeplugin" ),
 		"labels" => $labels,
 		"description" => "",
 		"public" => true,
@@ -110,10 +132,10 @@ Also bla  Lorem ipsum dolor sit amet, consectetur adipiscing elit. Vivamus non f
 */
     $result = "<style>img.biopic {max-width: 200px; height: auto; float: left;}</style>";
     $result .= "<div>";
-    foreach ($posts as $p) {
+    foreach ($posts as $i => $p) {
       $result .= '<h2>'.$p->post_title.'</h2>';
       //$result .= '<img src='.get_the_post_thumbnail_url($posts[0]->ID).' title="board member photo" alt="board member photo">';
-      $result .= get_the_post_thumbnail($posts[0]->ID, ' ', ['class' => 'biopic']);
+      $result .= get_the_post_thumbnail($posts[$i]->ID, ' ', ['class' => 'biopic']);
       $result .= $p->post_content;// post_content
       //get_the_post_thumbnail_url($posts[0]->ID);
     }
