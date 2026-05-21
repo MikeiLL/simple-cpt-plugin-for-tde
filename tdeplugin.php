@@ -203,7 +203,65 @@ add_action( 'acf/include_fields', function() {
 ) );
 } );
 
+add_filter( 'tde_plugin_posts_columns', function( $columns ) {
+  $columns['price'] = __( 'Price', 'textdomain' );
+  return $columns;
+});
 
+add_action( 'tde_plugin_posts_custom_column', function( $column, $post_id ) {
+  if ( $column === 'price' ) {
+      $price = get_post_meta( $post_id, 'price', true );
+      echo esc_html( $price );
+  }
+}, 10, 2 );
+
+add_action( 'quick_edit_custom_box', function( $column, $post_type ) {
+  if ( $post_type !== 'board-member' || $column !== 'sequence' ) return;
+  ?>
+  <fieldset class="inline-edit-col-right">
+      <div class="inline-edit-col">
+          <label>
+              <span class="title"><?php _e( 'Sequence', 'tdeplugin' ); ?></span>
+              <span class="input-text-wrap">
+                  <input type="text" name="sequence" value="">
+              </span>
+          </label>
+      </div>
+  </fieldset>
+  <?php
+}, 10, 2 );
+
+add_action( 'save_post_board-member', function( $post_id ) {
+  if ( isset( $_POST['sequence'] ) ) {
+      update_post_meta( $post_id, 'sequence', sanitize_text_field( $_POST['sequence'] ) );
+  }
+});
+
+add_action( 'admin_footer-edit.php', function() {
+  global $typenow;
+  if ( $typenow !== 'board-member' ) return;
+  ?>
+  <script>
+  jQuery(function($){
+      if (typeof inlineEditPost === 'undefined') return;
+
+      var $wp_inline_edit = inlineEditPost.edit;
+      inlineEditPost.edit = function( id ) {
+          $wp_inline_edit.apply( this, arguments );
+          var postId = 0;
+          if ( typeof(id) == 'object' ) {
+              postId = parseInt(this.getId(id));
+          }
+          if ( postId > 0 ) {
+              var $editRow = $('#edit-' + postId);
+              var sequence = $('#post-' + postId).find('td.column-sequence').text();
+              $editRow.find('input[name="sequence"]').val(sequence.trim());
+          }
+      };
+  });
+  </script>
+  <?php
+});
 
 
 
@@ -239,7 +297,7 @@ add_shortcode('board', function($atts) {
             )
         ),
         'order' => 'ASC',
-        'orderby'           => ['meta_value' => 'DESC', 'title' => 'ASC'],
+        'orderby'           => ['meta_value_num' => 'DESC', 'title' => 'ASC'],
         'post_status' => 'publish',
     ]);
     $result = "<style>img.biopic {max-width: 200px; height: auto; margin: 1em;} img.biopic-left {float: left;} img.biopic-right {float:right}</style>";
@@ -275,7 +333,7 @@ add_shortcode('artists', function($atts) {
             )
         ),
         'order' => 'ASC',
-        'orderby'           => ['meta_value' => 'DESC', 'title' => 'ASC'],
+        'orderby'           => ['meta_value_num' => 'DESC', 'title' => 'ASC'],
         'post_status' => 'publish',
     ]);
     $result = "<style>img.biopic {max-width: 200px; height: auto; margin: 1em;} img.biopic-left {float: left;} img.biopic-right {float:right}</style>";
