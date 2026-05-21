@@ -148,6 +148,29 @@ add_action( 'acf/include_fields', function() {
 			'prepend' => '',
 			'append' => '',
 		),
+		array(
+			'key' => 'field_6a0e1a21e96ed',
+			'label' => 'Sequence',
+			'name' => 'sequence',
+			'aria-label' => '',
+			'type' => 'number',
+			'instructions' => 'This can be used to set the sequence the item has in the display. Default of -1 will display in default order. Higher numbers will display first.',
+			'required' => 0,
+			'conditional_logic' => 0,
+			'wrapper' => array(
+				'width' => '',
+				'class' => '',
+				'id' => '',
+			),
+			'default_value' => -1,
+			'min' => -1,
+			'max' => 50,
+			'allow_in_bindings' => 0,
+			'placeholder' => '',
+			'step' => 1,
+			'prepend' => '',
+			'append' => '',
+		),
 	),
 	'location' => array(
 		array(
@@ -182,21 +205,54 @@ add_action( 'acf/include_fields', function() {
 
 
 
+
+
 add_shortcode('board', function($atts) {
+/*     $the_query = new WP_Query(array(
+      'post_type'         => 'board-member',
+      'posts_per_page'    => -1,
+      'meta_key'          => 'roles',
+      'orderby'           => 'meta_value',
+      'order'             => 'DESC'
+    ));
+
+
+    if( $the_query->have_posts() ):
+      while( $the_query->have_posts() ) : $the_query->the_post();
+          $result .= get_the_title();
+      endwhile;
+    endif;
+
+    wp_reset_query();   // Restore global post data stomped by the_post(). */
   $posts = get_posts([
         'post_type' => 'board-member',
-        'numberposts' => 50,
+        'posts_per_page'    => -1,
+        'meta_query' => array(
+            'relation' => 'OR',
+            array(
+                'key' => 'sequence',
+                'compare' => 'EXISTS'
+            ),
+            array(
+                'key' => 'sequence',
+                'compare' => 'NOT EXISTS'
+            )
+        ),
+        'order' => 'ASC',
+        'orderby'           => ['meta_value' => 'DESC', 'title' => 'ASC'],
         'post_status' => 'publish',
     ]);
     $result = "<style>img.biopic {max-width: 200px; height: auto; margin: 1em;} img.biopic-left {float: left;} img.biopic-right {float:right}</style>";
-    $result .= "<div>";
+    $result .= '<div class="presonnel boardofdirectors">';
     foreach ($posts as $i => $p) {
-      $result .= '<h2>'.$p->post_title.'</h2>';
-      //$result .= '<img src='.get_the_post_thumbnail_url($posts[0]->ID).' title="board member photo" alt="board member photo">';
+      $roles = implode(',',get_post_meta($posts[$i]->ID, "roles"));
+      $result .= '<h2 style="margin-bottom:0.1em;">'.$p->post_title.'</h2>';
+      if (isset($roles)):
+        $result .= '<h3 style="font-size:1.5em;margin-top:0.1em;font-variant:smallcaps;">' . $roles . '</h3>';
+      endif;
       $styles = $i % 2 == 0 ? 'biopic biopic-left' : 'biopic biopic-right';
       $result .= get_the_post_thumbnail($posts[$i]->ID, ' ', ['class' => $styles]);
-      $result .= $p->post_content;// post_content
-      //get_the_post_thumbnail_url($posts[0]->ID);
+      $result .= $p->post_content;
     }
     $result .= '</div>';
     return $result;
@@ -207,17 +263,25 @@ add_shortcode('artists', function($atts) {
   $posts = get_posts([
         'post_type' => 'artist',
         'numberposts' => 50,
+        'meta_query' => array(
+            'relation' => 'OR',
+            array(
+                'key' => 'sequence',
+                'compare' => 'EXISTS'
+            ),
+            array(
+                'key' => 'sequence',
+                'compare' => 'NOT EXISTS'
+            )
+        ),
+        'order' => 'ASC',
+        'orderby'           => ['meta_value' => 'DESC', 'title' => 'ASC'],
         'post_status' => 'publish',
     ]);
-    $customField = get_post_meta($posts[0]->ID, "roles");
-    echo "<pre>";
-    print_r($customField);
-    echo "</pre>";
     $result = "<style>img.biopic {max-width: 200px; height: auto; margin: 1em;} img.biopic-left {float: left;} img.biopic-right {float:right}</style>";
-    $result .= "<div>";
+    $result .= '<div class="presonnel artists">';
     foreach ($posts as $i => $p) {
       $result .= '<h2>'.$p->post_title.'</h2>';
-      //$result .= '<img src='.get_the_post_thumbnail_url($posts[0]->ID).' title="board member photo" alt="board member photo">';
       $styles = $i % 2 == 0 ? 'biopic biopic-left' : 'biopic biopic-right';
       $result .= get_the_post_thumbnail($posts[$i]->ID, ' ', ['class' => $styles]);
       $result .= $p->post_content;// post_content
