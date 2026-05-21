@@ -301,16 +301,17 @@ add_shortcode('board', function($atts) {
         'post_status' => 'publish',
     ]);
     $result = "<style>img.biopic {max-width: 200px; height: auto; margin: 1em;} img.biopic-left {float: left;} img.biopic-right {float:right}</style>";
-    $result .= '<div class="presonnel boardofdirectors">';
+    $result .= '<div class="presonnel boardofdirectors" style="display:flex;flex-direction:column;">';
     foreach ($posts as $i => $p) {
       $roles = implode(',',get_post_meta($posts[$i]->ID, "roles"));
-      $result .= '<h2 style="margin-bottom:0.1em;">'.$p->post_title.'</h2>';
+      $result .= '<div><h2 style="margin-bottom:0.1em;">'.$p->post_title.'</h2>';
       if (isset($roles)):
         $result .= '<h3 style="font-size:1.5em;margin-top:0.1em;font-variant:smallcaps;">' . $roles . '</h3>';
       endif;
       $styles = $i % 2 == 0 ? 'biopic biopic-left' : 'biopic biopic-right';
       $result .= get_the_post_thumbnail($posts[$i]->ID, ' ', ['class' => $styles]);
       $result .= $p->post_content;
+      $result .= '</div>';
     }
     $result .= '</div>';
     return $result;
@@ -337,13 +338,13 @@ add_shortcode('artists', function($atts) {
         'post_status' => 'publish',
     ]);
     $result = "<style>img.biopic {max-width: 200px; height: auto; margin: 1em;} img.biopic-left {float: left;} img.biopic-right {float:right}</style>";
-    $result .= '<div class="presonnel artists">';
+    $result .= '<div class="presonnel artists" style="display:flex;flex-direction:column;">';
     foreach ($posts as $i => $p) {
-      $result .= '<h2>'.$p->post_title.'</h2>';
+      $result .= '<div><h2>'.$p->post_title.'</h2>';
       $styles = $i % 2 == 0 ? 'biopic biopic-left' : 'biopic biopic-right';
       $result .= get_the_post_thumbnail($posts[$i]->ID, ' ', ['class' => $styles]);
-      $result .= $p->post_content;// post_content
-      //get_the_post_thumbnail_url($posts[0]->ID);
+      $result .= $p->post_content;
+      $result .= '</div>';
     }
     $result .= '</div>';
     return $result;
